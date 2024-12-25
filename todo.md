@@ -1,165 +1,105 @@
-# Game Information Collector Microservice - Developer TODO
+# Game Content Discovery Service - Phase 1 Test Implementation TODO
 
-## Overview
-Microservice that collects game information from multiple sources and returns structured data with reliability scores.
+## 1. Remove/Update Existing Tests
+- [ ] Review existing collector tests
+- [ ] Remove API-specific tests (since we're using FireCrawl)
+- [ ] Remove browser-specific tests
+- [ ] Update reliability calculator tests to match new approach
 
-## Input/Output
-- **Input**: Game name (string)
-- **Output**: JSON with collected texts, sources, reliability scores, and metadata
+## 2. Base FireCrawl Tests
+- [ ] Test basic FireCrawl configuration
+  * Test initialization
+  * Test basic URL processing
+  * Test response format (HTML, markdown, metadata, links)
+- [ ] Test rate limiting
+  * Test delay between requests
+  * Test concurrent requests handling
+- [ ] Test error scenarios
+  * Test network errors
+  * Test invalid URLs
+  * Test timeout handling
 
-## Development Approach
-Test-Driven Development (TDD) - implement tests first, then features.
+## 3. Fandom Wiki Discovery Tests
+- [ ] Test wiki domain finder
+  * Test exact match (game-name.fandom.com)
+  * Test with spaces ("God of War" → "godofwar.fandom.com")
+  * Test with special characters ("Assassin's Creed" variations)
+  * Test non-existent wiki handling
+  * Test redirects
+  * Test alternate naming patterns
+- [ ] Test wiki content discovery
+  * Test main page link extraction
+  * Test Special:AllPages processing
+  * Test navigation through sections
+  * Test handling of different page types
+  * Test pagination processing
 
-## Phase 1: Test Implementation
+## 4. Search Results Tests (IGN, Gamespot, YouTube)
+- [ ] Test Google search results processing
+  * Test query construction
+  * Test result extraction
+  * Test URL validation
+  * Test site-specific filtering
+- [ ] Test URL pattern matching
+  * Test IGN article patterns
+  * Test Gamespot article patterns
+  * Test YouTube video patterns
 
-### 1. Set Up Test Environment
-- [x] Configure test framework
-- [x] Set up mock server
-- [x] Create test database configuration
-- [x] Prepare logging for tests
+## 5. Results Processing Tests
+- [ ] Test URL deduplication
+  * Test exact duplicates
+  * Test similar URLs
+  * Test different protocols (http/https)
+- [ ] Test URL categorization
+  * Test priority assignment
+  * Test content type detection
+  * Test relevance scoring
 
-### 2. Create Mock Data
-- [x] Fandom API responses
-- [x] IGN API responses
-- [x] Gamespot API responses
-- [x] YouTube API responses
-- [x] Steam content responses
-- [x] Google Search results
-- [x] Error response scenarios
+## 6. Integration Tests
+- [ ] Test complete discovery flow
+  * Test with known game
+  * Test with non-existent game
+  * Test with game having multiple wikis
+- [ ] Test error handling
+  * Test partial failures
+  * Test recovery scenarios
+  * Test timeout handling
 
-### 3. Implement Unit Tests
-
-#### Source Collector Tests
-- [x] Fandom Collector tests
-  - Valid game scenarios
-  - Non-existent game handling
-  - Section extraction verification
-  - Rate limiting tests
-  - Error handling tests
-
-- [x] IGN Collector tests
-  - Article retrieval tests
-  - Content filtering tests
-  - API error handling
-
-- [x] Gamespot Collector tests
-  - Article retrieval tests
-  - Content type filtering
-  - Rate limiting tests
-
-- [x] YouTube Collector tests
-  - Transcript extraction tests
-  - Channel filtering tests
-  - Duration filtering tests
-
-#### Reliability Calculator Tests
-- [x] Domain-based scoring tests
-- [x] Combined score calculation tests
-- [x] Unknown source handling tests
-
-### 4. Implement Integration Tests
-- [x] Multi-source collection tests
-- [x] Duplicate removal tests
-- [x] Rate limiting integration tests
-- [x] Error cascade tests
-
-### 5. Performance Tests
-- [x] Response time tests (60s limit)
-- [x] Concurrent request handling
-- [x] Memory usage tests
-- [x] Cache effectiveness tests
-
-## Phase 2: Feature Implementation
-
-### 1. Core Collectors
-- [ ] Implement Fandom collector
-  - API integration
-  - Content extraction
-  - Rate limiting
-
-- [ ] Implement IGN collector
-  - API integration
-  - Article filtering
-  - Content extraction
-
-- [ ] Implement Gamespot collector
-  - Search implementation
-  - Content filtering
-  - Rate limiting
-
-- [ ] Implement YouTube collector
-  - API integration
-  - Transcript extraction
-  - Channel filtering
-
-### 2. Support Systems
-- [ ] Implement reliability calculator
-- [ ] Set up rate limiting system
-- [ ] Create caching layer
-- [ ] Implement error handling
-
-### 3. API Response Handler
-- [ ] Create response formatter
-- [ ] Implement statistics calculator
-- [ ] Add source attribution
-- [ ] Set up content validation
-
-## Technical Requirements
-
-### Rate Limits
-- Maximum 5 requests per second per source
-- Cache responses for 24 hours
-- Maximum collection time: 60 seconds
-
-### Response Format
-```json
-{
-    "game_name": "string",
-    "collection_timestamp": "datetime",
-    "entries": [
-        {
-            "content": "string",
-            "url": "string",
-            "reliability_score": float,
-            "content_type": "enum",
-            "collection_timestamp": "datetime",
-            "text_length": int,
-            "site_specific": {
-                "section_type": "string",
-                "author": "string",
-                "publication_date": "datetime"
-            }
-        }
-    ],
-    "stats": {
-        "total_entries": int,
-        "entries_by_type": {
-            "FANDOM": int,
-            "IGN": int,
-            "GAMESPOT": int,
-            "POLYGON": int,
-            "STEAM": int,
-            "OTHER": int
-        },
-        "average_reliability": float,
-        "collection_duration": float
+## Test Data Needed
+```
+games_test_data = [
+    {
+        "name": "God of War",
+        "expected_wiki": "godofwar.fandom.com",
+        "expected_sections": ["wiki", "category"],
+        "alternative_names": ["GOW", "God of War (2018)"]
+    },
+    {
+        "name": "Assassin's Creed",
+        "expected_wiki": "assassinscreed.fandom.com",
+        "expected_sections": ["wiki", "category"],
+        "special_characters": true
     }
-}
+    // Add more test cases
+]
 ```
 
-### Success Criteria
-- All tests passing
-- 90%+ test coverage
-- 50+ unique sources per game
-- Average reliability score > 7
-- Response time < 60 seconds
-- < 1% error rate
-- No duplicate content
-- 30%+ content from high-reliability sources
+## Mock Data Needed
+- [ ] Sample Fandom HTML pages
+- [ ] Sample Google search results
+- [ ] Sample article pages
+- [ ] Error response samples
 
-## Notes
-- Start with test implementation
-- Use mock data for development
-- Document all assumptions
-- Track API quotas
-- Implement proper error logging
+## Test Environment Setup
+- [ ] Configure test timeouts
+- [ ] Set up rate limiting parameters
+- [ ] Configure mock responses
+- [ ] Set up error simulation
+
+## Success Criteria for Tests
+- [ ] All tests should be independent
+- [ ] Tests should handle async operations correctly
+- [ ] Tests should cover edge cases
+- [ ] Tests should validate error handling
+- [ ] Tests should verify rate limiting
+- [ ] Tests should check data integrity
