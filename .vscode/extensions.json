@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "streetsidesoftware.code-spell-checker",
+    "christian-kohler.path-intellisense",
+    "visualstudioexptteam.vscodeintellicode",
+    "kisstkondoros.vscode-codemetrics",
+    "wix.vscode-import-cost",
+    "aaron-bond.better-comments",
+    "wayou.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "mikestead.dotenv",
+    "eamodio.gitlens",
+    "donjayamanne.githistory",
+    "pflannery.vscode-versionlens",
+    "redhat.vscode-yaml"
+  ]
+}
