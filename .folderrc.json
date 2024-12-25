@@ -1,0 +1,14 @@
+{
+      "rules": {
+          "pattern": "kebab-case",
+              "structure": {
+                    "src": {
+                            "types": {},
+                                    "functions": {},
+                                            "utils": {},
+                                                    "constants": {}
+                                                          }
+                                                              }
+                                                                }
+                                                                }
+}
