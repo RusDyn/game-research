@@ -1,6 +1,7 @@
 import { GameInformationService } from './index';
 import { BaseCollector } from './collectors/BaseCollector';
 import { GameDataEntry, ContentType } from './types/GameData';
+import 'jest'; // Add this import
 
 class MockCollector extends BaseCollector {
   constructor(private mockData: GameDataEntry[]) {
@@ -24,7 +25,7 @@ describe('GameInformationService', () => {
       url: 'https://test.com/game',
       reliability_score: 8.5,
       content_type: 'FANDOM',
-      collection_timestamp: new Date(),
+      collection_timestamp: new Date().toISOString(),
       text_length: 100,
       site_specific: {
         section_type: 'overview',

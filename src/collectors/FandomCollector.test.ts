@@ -1,6 +1,8 @@
 import { FandomCollector } from './FandomCollector'
 import { testLogCapture } from '../__tests__/setup'
 import * as fandomMocks from '../__mocks__/fandom'
+import { http } from 'msw'
+import { server } from '../__tests__/setup'
 
 describe('FandomCollector', () => {
   let collector: FandomCollector
@@ -11,11 +13,12 @@ describe('FandomCollector', () => {
 
   describe('collect', () => {
     it('should successfully collect data for a valid game', async () => {
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
-      expect(result).toBeDefined()
-      expect(result.entries).toHaveLength(1)
-      expect(result.entries[0]).toMatchObject({
+      expect(entries).toBeDefined()
+      expect(entries.length).toBeGreaterThan(0)
+      const abstractEntry = entries.find(e => e.site_specific.section_type === 'abstract')
+      expect(abstractEntry).toMatchObject({
         content: expect.stringContaining('Test Game is an action-adventure video game'),
         url: expect.stringContaining('gaming.fandom.com'),
         reliability_score: expect.any(Number),
@@ -29,9 +32,9 @@ describe('FandomCollector', () => {
     })
 
     it('should handle non-existent games', async () => {
-      const result = await collector.collect('NonExistentGame')
+      const entries = await collector.collect('NonExistentGame')
       
-      expect(result.entries).toHaveLength(0)
+      expect(entries).toHaveLength(0)
       expect(testLogCapture.containsMessage('No pages found for game: NonExistentGame')).toBe(true)
     })
 
@@ -39,23 +42,26 @@ describe('FandomCollector', () => {
       // Mock rate limit response
       server.use(
         http.get('https://api.fandom.com/*', () => {
-          return HttpResponse.json(fandomMocks.rateLimitResponse, { status: 429 })
+          return new Response(JSON.stringify(fandomMocks.rateLimitResponse), {
+            status: 429,
+            headers: { 'Content-Type': 'application/json' }
+          })
         })
       )
 
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
-      expect(result.entries).toHaveLength(0)
+      expect(entries).toHaveLength(0)
       expect(testLogCapture.containsError('Rate limit exceeded for Fandom API')).toBe(true)
     })
 
     it('should extract sections correctly', async () => {
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
       // Check if all sections are extracted
       const sections = ['Gameplay', 'Story', 'Development']
       sections.forEach(section => {
-        const sectionEntry = result.entries.find(
+        const sectionEntry = entries.find(
           entry => entry.site_specific.section_type === section.toLowerCase()
         )
         expect(sectionEntry).toBeDefined()
@@ -67,42 +73,45 @@ describe('FandomCollector', () => {
       // Mock malformed response
       server.use(
         http.get('https://api.fandom.com/*', () => {
-          return HttpResponse.json(fandomMocks.malformedResponse, { status: 400 })
+          return new Response(JSON.stringify(fandomMocks.malformedResponse), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          })
         })
       )
 
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
-      expect(result.entries).toHaveLength(0)
+      expect(entries).toHaveLength(0)
       expect(testLogCapture.containsError('Invalid request to Fandom API')).toBe(true)
     })
 
-    it('should respect rate limiting configuration', async () => {
+    it('should respect rate limiting', async () => {
       // Make multiple requests in quick succession
       const promises = Array(6).fill(null).map(() => collector.collect('Test Game'))
       const results = await Promise.all(promises)
       
       // The 6th request should be rate limited
-      expect(results[5].entries).toHaveLength(0)
+      expect(results[5]).toHaveLength(0)
       expect(testLogCapture.containsError('Rate limit exceeded for Fandom API')).toBe(true)
     })
   })
 
   describe('calculateReliability', () => {
     it('should calculate reliability score based on content', async () => {
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
-      result.entries.forEach(entry => {
+      entries.forEach(entry => {
         expect(entry.reliability_score).toBeGreaterThan(0)
         expect(entry.reliability_score).toBeLessThanOrEqual(10)
       })
     })
 
     it('should give higher scores to longer, well-structured content', async () => {
-      const result = await collector.collect('Test Game')
+      const entries = await collector.collect('Test Game')
       
       // Sort entries by length
-      const sortedEntries = [...result.entries].sort(
+      const sortedEntries = [...entries].sort(
         (a, b) => b.text_length - a.text_length
       )
       

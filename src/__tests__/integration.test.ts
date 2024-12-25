@@ -1,3 +1,4 @@
+import 'jest'; // Add this import
 import { GameInformationService } from '../index';
 import { FandomCollector } from '../collectors/FandomCollector';
 import { IGNCollector } from '../collectors/IGNCollector';
@@ -62,7 +63,7 @@ describe('Game Information Service Integration', () => {
     // Verify response structure is maintained
     expect(result).toMatchObject({
       game_name: expect.any(String),
-      collection_timestamp: expect.any(Date),
+      collection_timestamp: expect.any(String),
       entries: expect.any(Array),
       stats: {
         total_entries: expect.any(Number),
@@ -97,7 +98,7 @@ describe('Game Information Service Integration', () => {
         super('TEST');
       }
 
-      async collect(gameName: string): Promise<GameDataEntry[]> {
+      async collect(_gameName: string): Promise<GameDataEntry[]> {
         await this.rateLimit();
         return [
           {

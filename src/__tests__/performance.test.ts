@@ -4,6 +4,11 @@ import { FandomCollector } from '../collectors/FandomCollector';
 import { IGNCollector } from '../collectors/IGNCollector';
 import { GamespotCollector } from '../collectors/GamespotCollector';
 import { YouTubeCollector } from '../collectors/YouTubeCollector';
+import { server, http } from './setup';
+import * as fandomMocks from '../__mocks__/fandom';
+import * as ignMocks from '../__mocks__/ign';
+import * as gamespotMocks from '../__mocks__/gamespot';
+import * as youtubeMocks from '../__mocks__/youtube';
 
 jest.setTimeout(70000); // Set higher timeout for performance tests
 
@@ -17,6 +22,40 @@ describe('Performance Tests', () => {
     service.registerCollector(new IGNCollector());
     service.registerCollector(new GamespotCollector());
     service.registerCollector(new YouTubeCollector());
+
+    // Reset MSW handlers to default behavior
+    server.resetHandlers(
+      http.get('https://api.fandom.com/*', () => {
+        return new Response(JSON.stringify(fandomMocks.validGameResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }),
+      http.get('https://api.ign.com/*', () => {
+        return new Response(JSON.stringify(ignMocks.validGameResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }),
+      http.get('https://api.gamespot.com/*', () => {
+        return new Response(JSON.stringify(gamespotMocks.validGameResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }),
+      http.get('https://www.googleapis.com/youtube/v3/search', () => {
+        return new Response(JSON.stringify(youtubeMocks.validSearchResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }),
+      http.get('https://www.googleapis.com/youtube/v3/captions/*', () => {
+        return new Response(JSON.stringify(youtubeMocks.validTranscriptResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
   });
 
   describe('Response Time Tests', () => {

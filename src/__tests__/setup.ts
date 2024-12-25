@@ -1,4 +1,4 @@
-import { http, HttpResponse, PathParams } from 'msw'
+import { http } from 'msw'
 import { setupServer } from 'msw/node'
 import * as fandomMocks from '../__mocks__/fandom'
 import * as ignMocks from '../__mocks__/ign'
@@ -13,66 +13,99 @@ const testLogCapture = new TestLogCapture()
 // Define handlers for different API endpoints
 const handlers = [
   // Fandom API handlers
-  http.get('https://api.fandom.com/*', async ({ request }: { request: Request }) => {
+  http.get('https://api.fandom.com/*', async ({ request }) => {
     const url = new URL(request.url)
     const query = url.searchParams.get('query')
     
     if (!query) {
-      return HttpResponse.json(fandomMocks.malformedResponse, { status: 400 })
+      return new Response(JSON.stringify(fandomMocks.malformedResponse), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
     if (query.toLowerCase().includes('test game')) {
-      return HttpResponse.json(fandomMocks.validGameResponse)
+      return new Response(JSON.stringify(fandomMocks.validGameResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return HttpResponse.json(fandomMocks.nonExistentGameResponse, { status: 404 })
+    return new Response(JSON.stringify(fandomMocks.nonExistentGameResponse), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }),
 
   // IGN API handlers
-  http.get('https://api.ign.com/*', async ({ request }: { request: Request }) => {
+  http.get('https://api.ign.com/*', async ({ request }) => {
     const url = new URL(request.url)
     const search = url.searchParams.get('q')
     
     if (search?.toLowerCase().includes('test game')) {
-      return HttpResponse.json(ignMocks.validGameResponse)
+      return new Response(JSON.stringify(ignMocks.validGameResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return HttpResponse.json(ignMocks.emptyGameResponse)
+    return new Response(JSON.stringify(ignMocks.emptyGameResponse), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }),
 
   // Gamespot API handlers
-  http.get('https://api.gamespot.com/*', async ({ request }: { request: Request }) => {
+  http.get('https://api.gamespot.com/*', async ({ request }) => {
     const url = new URL(request.url)
     const filter = url.searchParams.get('filter')
     
     if (filter?.toLowerCase().includes('test game')) {
-      return HttpResponse.json(gamespotMocks.validGameResponse)
+      return new Response(JSON.stringify(gamespotMocks.validGameResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return HttpResponse.json(gamespotMocks.emptyGameResponse)
+    return new Response(JSON.stringify(gamespotMocks.emptyGameResponse), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }),
 
   // YouTube API handlers
-  http.get('https://www.googleapis.com/youtube/v3/search', async ({ request }: { request: Request }) => {
+  http.get('https://www.googleapis.com/youtube/v3/search', async ({ request }) => {
     const url = new URL(request.url)
     const q = url.searchParams.get('q')
     
     if (q?.toLowerCase().includes('test game')) {
-      return HttpResponse.json(youtubeMocks.validSearchResponse)
+      return new Response(JSON.stringify(youtubeMocks.validSearchResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return HttpResponse.json(youtubeMocks.emptySearchResponse)
+    return new Response(JSON.stringify(youtubeMocks.emptySearchResponse), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }),
 
-  http.get('https://www.googleapis.com/youtube/v3/captions/*', async ({ request }: { request: Request }) => {
+  http.get('https://www.googleapis.com/youtube/v3/captions/*', async ({ request }) => {
     const url = new URL(request.url)
     const videoId = url.pathname.split('/').pop()
     
     if (videoId === 'abc123') {
-      return HttpResponse.json(youtubeMocks.validTranscriptResponse)
+      return new Response(JSON.stringify(youtubeMocks.validTranscriptResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return HttpResponse.json(youtubeMocks.noTranscriptResponse, { status: 404 })
+    return new Response(JSON.stringify(youtubeMocks.noTranscriptResponse), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' }
+    })
   })
 ]
 

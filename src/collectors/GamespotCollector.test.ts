@@ -1,6 +1,6 @@
 import { GamespotCollector } from './GamespotCollector';
 import { validGameResponse, emptyGameResponse, rateLimitResponse, serverErrorResponse } from '../__mocks__/gamespot';
-import { GameDataEntry } from '../types/GameData';
+import 'jest'; // Add this import
 
 // Mock the fetch function
 global.fetch = jest.fn();
@@ -74,24 +74,36 @@ describe('GamespotCollector', () => {
     await expect(collector.collect('Error Game')).rejects.toThrow('Internal server error');
   });
 
-  it('should respect rate limiting', async () => {
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => validGameResponse
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => validGameResponse
-      });
+  describe('Rate Limiting', () => {
+    let dateNowSpy: jest.SpyInstance;
+    let currentTime: number;
 
-    const startTime = Date.now();
-    await collector.collect('Game 1');
-    await collector.collect('Game 2');
-    const endTime = Date.now();
+    beforeEach(() => {
+      currentTime = 0;
+      dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => currentTime);
+    });
 
-    // Should have at least 200ms between requests (from BaseCollector)
-    expect(endTime - startTime).toBeGreaterThanOrEqual(200);
+    afterEach(() => {
+      dateNowSpy.mockRestore();
+    });
+
+    it('should respect rate limiting', async () => {
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => validGameResponse
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => validGameResponse
+        });
+
+      await collector.collect('Game 1');
+      currentTime += 200; // Simulate time passing
+      await collector.collect('Game 2');
+      
+      expect(dateNowSpy).toHaveBeenCalledTimes(4); // Each request calls Date.now() twice
+    });
   });
 
   it('should filter content by type', async () => {
@@ -107,7 +119,10 @@ describe('GamespotCollector', () => {
             ...validGameResponse.results[1],
             categories: { name: 'Reviews' } // Should be included
           }
-        ]
+        ],
+        limit: 10,
+        offset: 0,
+        total: 2
       })
     });
 

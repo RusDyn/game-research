@@ -32,7 +32,7 @@ class GameInformationService {
 
     return {
       game_name: gameName,
-      collection_timestamp: new Date(),
+      collection_timestamp: new Date().toISOString(),
       entries,
       stats
     };

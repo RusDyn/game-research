@@ -1,5 +1,5 @@
 import { BaseCollector } from './BaseCollector'
-import { GameData } from '../types/GameData'
+import { GameData, GameDataEntry } from '../types/GameData'
 import { logger } from '../utils/logger'
 
 interface FandomResponse {
@@ -35,7 +35,8 @@ export class FandomCollector extends BaseCollector {
 
   protected async fetchData(gameName: string): Promise<GameData> {
     try {
-      const response = await fetch(`https://api.fandom.com/api/v1/search?query=${encodeURIComponent(gameName)}`)
+      await this.rateLimit()
+      const response = await fetch(`https://api.fandom.com/search?query=${encodeURIComponent(gameName)}`)
       
       if (!response.ok) {
         if (response.status === 429) {
@@ -74,21 +75,27 @@ export class FandomCollector extends BaseCollector {
           }
         })
 
-        // Process sections
+      // Process sections if they exist
+      if (page.sections) {
+        const validSections = ['gameplay', 'story', 'development']
         for (const section of page.sections) {
-          entries.push({
-            content: section.content,
-            url: `${page.url}#${section.title.toLowerCase().replace(/\s+/g, '_')}`,
-            reliability_score: this.calculateReliability(section.content),
-            content_type: this.sourceType,
-            collection_timestamp: new Date().toISOString(),
-            text_length: section.content.length,
-            site_specific: {
-              section_type: section.title.toLowerCase(),
-              publication_date: new Date().toISOString()
-            }
-          })
+          const sectionType = section.title.toLowerCase()
+          if (validSections.includes(sectionType)) {
+            entries.push({
+              content: section.content,
+              url: `${page.url}#${section.title.toLowerCase().replace(/\s+/g, '_')}`,
+              reliability_score: this.calculateReliability(section.content),
+              content_type: this.sourceType,
+              collection_timestamp: new Date().toISOString(),
+              text_length: section.content.length,
+              site_specific: {
+                section_type: sectionType,
+                publication_date: new Date().toISOString()
+              }
+            })
+          }
         }
+      }
       }
 
       return { entries }

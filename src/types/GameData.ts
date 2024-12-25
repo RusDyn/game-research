@@ -16,7 +16,7 @@ export interface GameDataEntry {
 
 export interface GameDataResponse {
   game_name: string
-  collection_timestamp: Date
+  collection_timestamp: string
   entries: GameDataEntry[]
   stats: {
     total_entries: number

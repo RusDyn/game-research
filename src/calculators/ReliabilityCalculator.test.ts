@@ -1,4 +1,5 @@
 import { ReliabilityCalculator } from './ReliabilityCalculator';
+import 'jest'; // Add this import
 
 describe('ReliabilityCalculator', () => {
   let calculator: ReliabilityCalculator;

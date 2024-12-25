@@ -1,6 +1,6 @@
 import { IGNCollector } from './IGNCollector';
 import { validGameResponse, emptyGameResponse, errorResponse } from '../__mocks__/ign';
-import { GameDataEntry } from '../types/GameData';
+import 'jest'; // Add this import
 
 // Mock the fetch function
 global.fetch = jest.fn();
